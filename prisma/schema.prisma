@@ -1,0 +1,50 @@
+// Prisma Schema for Real Estate Marketplace
+// This file defines our database structure and relationships
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - represents registered users in our system
+model User {
+  id        String   @id @default(cuid()) // Unique identifier
+  email     String   @unique              // Email must be unique
+  name      String                        // User's full name
+  phone     String?                       // Optional phone number
+  password  String                        // Hashed password
+  createdAt DateTime @default(now())      // Account creation timestamp
+  updatedAt DateTime @updatedAt           // Last update timestamp
+  
+  // Relationship: One user can have many listings
+  listings  Listing[]
+  
+  @@map("users") // Maps to 'users' table in database
+}
+
+// Listing model - represents property listings
+model Listing {
+  id          String   @id @default(cuid()) // Unique identifier
+  title       String                        // Property title
+  description String                        // Detailed description
+  price       Int                          // Price in cents (to avoid decimal issues)
+  location    String                       // Property location/address
+  type        String                       // Property type (apartment, house, etc.)
+  bedrooms    Int?                         // Number of bedrooms (optional)
+  bathrooms   Int?                         // Number of bathrooms (optional)
+  area        Int?                         // Area in square feet (optional)
+  images      String[]                     // Array of image URLs
+  isActive    Boolean  @default(true)      // Whether listing is active
+  createdAt   DateTime @default(now())     // Creation timestamp
+  updatedAt   DateTime @updatedAt          // Last update timestamp
+  
+  // Foreign key relationship to User
+  authorId    String                       // References user who created listing
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  @@map("listings") // Maps to 'listings' table in database
+}
